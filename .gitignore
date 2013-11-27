@@ -29,7 +29,7 @@ _testmain.go
 
 # project files should be checked into the repository, unless a significant
 # proportion of contributors will probably not be using SublimeText
-# *.sublime-project
+*.sublime-project
 
 # OSX stuff
 .DS_Store
