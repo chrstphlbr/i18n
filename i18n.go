@@ -11,6 +11,21 @@ import (
 
 const defaultDirectory = "/files"
 
+var manager struct {
+	sync.Mutex
+	m I18nManager
+}
+
+func Manager() I18nManager {
+	manager.Lock()
+	defer manager.Unlock()
+	if manager.m == nil {
+		repository := resource.NewFileRepository(defaultDirectory)
+		manager.m = NewDefaultI18nManager([]resource.Repository{repository})
+	}
+	return manager.m
+}
+
 type I18nManager interface {
 	Get(key string, language string) (value string, err error)
 	SetDefaultLanguage(language string)
