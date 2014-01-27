@@ -3,7 +3,7 @@ package i18n
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/chrstphlbr/ressource"
+	"github.com/chrstphlbr/resource"
 	"log"
 	"sync"
 	"time"
@@ -26,7 +26,7 @@ type values map[string]string
 type DefaultI18nManager struct {
 	accessLock sync.RWMutex
 	// pathes to directories where files are located
-	ressources         []ressource.Repository
+	resources          []resource.Repository
 	mapping            keys
 	mappingConstructed time.Time
 	defaultLanguage    string
@@ -83,13 +83,13 @@ func (m *DefaultI18nManager) constructMapping() {
 		}
 	}
 
-	for _, repo := range m.ressources {
+	for _, repo := range m.resources {
 		// update the repository
 		repo.Update()
-		for _, res := range repo.Ressources() {
+		for _, res := range repo.Resources() {
 			// get reader
 			jsonReader, err := res.Get()
-			// check for errors when getting reader to ressource
+			// check for errors when getting reader to resource
 			if err != nil {
 				log.Printf("could not open ressorce: %v", err)
 			}
@@ -99,7 +99,7 @@ func (m *DefaultI18nManager) constructMapping() {
 			err = jsonDecoder.Decode(&keys)
 			// check for decoding errors
 			if err != nil {
-				log.Printf("could not unmarshal json ressource: %v\n", err)
+				log.Printf("could not unmarshal json resource: %v\n", err)
 				continue
 			}
 			// decoding was successful
@@ -109,8 +109,8 @@ func (m *DefaultI18nManager) constructMapping() {
 	m.mappingConstructed = time.Now()
 }
 
-func NewDefaultI18nManager(repositories []ressource.Repository) *DefaultI18nManager {
-	defaultManager := &DefaultI18nManager{ressources: repositories}
+func NewDefaultI18nManager(repositories []resource.Repository) *DefaultI18nManager {
+	defaultManager := &DefaultI18nManager{resources: repositories}
 	defaultManager.constructMapping()
 	return defaultManager
 }
