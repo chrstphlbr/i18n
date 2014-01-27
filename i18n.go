@@ -21,7 +21,7 @@ func Manager() I18nManager {
 	defer manager.Unlock()
 	if manager.m == nil {
 		repository := resource.NewFileRepository(defaultDirectory)
-		manager.m = NewDefaultI18nManager([]resource.Repository{repository})
+		manager.m = NewDefaultI18nManager(repository)
 	}
 	return manager.m
 }
@@ -41,7 +41,7 @@ type values map[string]string
 type DefaultI18nManager struct {
 	accessLock sync.RWMutex
 	// pathes to directories where files are located
-	resources          []resource.Repository
+	repository         resource.Repository
 	mapping            keys
 	mappingConstructed time.Time
 	defaultLanguage    string
@@ -98,34 +98,32 @@ func (m *DefaultI18nManager) constructMapping() {
 		}
 	}
 
-	for _, repo := range m.resources {
-		// update the repository
-		repo.Update()
-		for _, res := range repo.Resources() {
-			// get reader
-			jsonReader, err := res.Get()
-			// check for errors when getting reader to resource
-			if err != nil {
-				log.Printf("could not open ressorce: %v", err)
-			}
-			// create json decoder from reader
-			jsonDecoder := json.NewDecoder(jsonReader)
-			// decode json
-			err = jsonDecoder.Decode(&keys)
-			// check for decoding errors
-			if err != nil {
-				log.Printf("could not unmarshal json resource: %v\n", err)
-				continue
-			}
-			// decoding was successful
-			addKeysToMapping()
+	// update the repository
+	m.repository.Update()
+	for _, res := range m.repository.Resources() {
+		// get reader
+		jsonReader, err := res.Get()
+		// check for errors when getting reader to resource
+		if err != nil {
+			log.Printf("could not open resource: %v", err)
 		}
+		// create json decoder from reader
+		jsonDecoder := json.NewDecoder(jsonReader)
+		// decode json
+		err = jsonDecoder.Decode(&keys)
+		// check for decoding errors
+		if err != nil {
+			log.Printf("could not unmarshal json resource: %v\n", err)
+			continue
+		}
+		// decoding was successful
+		addKeysToMapping()
 	}
 	m.mappingConstructed = time.Now()
 }
 
-func NewDefaultI18nManager(repositories []resource.Repository) *DefaultI18nManager {
-	defaultManager := &DefaultI18nManager{resources: repositories}
+func NewDefaultI18nManager(repository resource.Repository) *DefaultI18nManager {
+	defaultManager := &DefaultI18nManager{repository: repository}
 	defaultManager.constructMapping()
 	return defaultManager
 }

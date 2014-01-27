@@ -35,7 +35,7 @@ func tearDown(t *testing.T) {
 func TestDefaultLanguage(t *testing.T) {
 	const defaultLanaguage = "en"
 
-	manager := &DefaultI18nManager{resources: []resource.Repository{}}
+	manager := &DefaultI18nManager{}
 	manager.SetDefaultLanguage(defaultLanaguage)
 
 	if manager.defaultLanguage != "en" {
@@ -47,7 +47,7 @@ func TestConstructMapping(t *testing.T) {
 	repo := setUp(t)
 	defer tearDown(t)
 
-	manager := NewDefaultI18nManager([]resource.Repository{repo})
+	manager := NewDefaultI18nManager(repo)
 
 	checkElement := func(t *testing.T, mapping keys, element string) *values {
 		el, ok := mapping[element]
@@ -102,7 +102,7 @@ func TestGetFound(t *testing.T) {
 	repo := setUp(t)
 	defer tearDown(t)
 
-	manager := NewDefaultI18nManager([]resource.Repository{repo})
+	manager := NewDefaultI18nManager(repo)
 	manager.SetDefaultLanguage("en")
 
 	const (
@@ -135,7 +135,7 @@ func TestGetFoundWithWrongDefaultLang(t *testing.T) {
 	repo := setUp(t)
 	defer tearDown(t)
 
-	manager := NewDefaultI18nManager([]resource.Repository{repo})
+	manager := NewDefaultI18nManager(repo)
 	manager.SetDefaultLanguage("es")
 
 	const vEn = "hello"
@@ -152,7 +152,7 @@ func TestGetWrongKey(t *testing.T) {
 	repo := setUp(t)
 	defer tearDown(t)
 
-	manager := NewDefaultI18nManager([]resource.Repository{repo})
+	manager := NewDefaultI18nManager(repo)
 
 	value, err := manager.Get("huhu", "en")
 	if err == nil {
@@ -164,7 +164,7 @@ func TestGetWrongLanguage(t *testing.T) {
 	repo := setUp(t)
 	defer tearDown(t)
 
-	manager := NewDefaultI18nManager([]resource.Repository{repo})
+	manager := NewDefaultI18nManager(repo)
 
 	value, err := manager.Get("hello", "es")
 	if err == nil {
@@ -176,7 +176,7 @@ func TestGetWrongLangButDefaultLang(t *testing.T) {
 	repo := setUp(t)
 	defer tearDown(t)
 
-	manager := NewDefaultI18nManager([]resource.Repository{repo})
+	manager := NewDefaultI18nManager(repo)
 	manager.SetDefaultLanguage("en")
 
 	const vExp = "hello"
@@ -193,7 +193,7 @@ func TestGetWrongLangAndWrongDefaultLang(t *testing.T) {
 	repo := setUp(t)
 	defer tearDown(t)
 
-	manager := NewDefaultI18nManager([]resource.Repository{repo})
+	manager := NewDefaultI18nManager(repo)
 	manager.SetDefaultLanguage("es")
 
 	value, err := manager.Get("hello", "hu")
