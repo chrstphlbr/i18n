@@ -32,14 +32,25 @@ func tearDown(t *testing.T) {
 	testHelpers.RemoveFile(t, filesDirectory)
 }
 
-func TestDefaultLanguage(t *testing.T) {
+func TestSetGetLanguage(t *testing.T) {
+	const lanaguage = "en"
+
+	manager := &DefaultManager{}
+	manager.SetLanguage(lanaguage)
+
+	if manager.GetLanguage() != "en" {
+		t.Fatalf("did not set default language (\"%s\") to \"%s\"", manager.GetDefaultLanguage(), lanaguage)
+	}
+}
+
+func TestSetGetDefaultLanguage(t *testing.T) {
 	const defaultLanaguage = "en"
 
 	manager := &DefaultManager{}
 	manager.SetDefaultLanguage(defaultLanaguage)
 
-	if manager.defaultLanguage != "en" {
-		t.Fatalf("did not set default language (\"%s\") to \"%s\"", manager.defaultLanguage, defaultLanaguage)
+	if manager.GetDefaultLanguage() != "en" {
+		t.Fatalf("did not set default language (\"%s\") to \"%s\"", manager.GetDefaultLanguage(), defaultLanaguage)
 	}
 }
 
@@ -103,6 +114,25 @@ func TestGetFound(t *testing.T) {
 	defer tearDown(t)
 
 	manager := NewDefaultManager(repo)
+	manager.SetLanguage("en")
+
+	const (
+		vEn = "hello"
+	)
+
+	value, err := manager.Get("hello")
+	if err != nil {
+		t.Fatalf("should have found value (err: %v)", err)
+	} else if value != vEn {
+		t.Fatalf("found value (%s), but expected \"%s\"", value, vEn)
+	}
+}
+
+func TestGetByLanguageFound(t *testing.T) {
+	repo := setUp(t)
+	defer tearDown(t)
+
+	manager := NewDefaultManager(repo)
 	manager.SetDefaultLanguage("en")
 
 	const (
@@ -111,19 +141,19 @@ func TestGetFound(t *testing.T) {
 		vRu = "Привет"
 	)
 
-	value, err := manager.Get("hello", "en")
+	value, err := manager.GetByLanguage("hello", "en")
 	if err != nil {
 		t.Fatalf("should have found value (err: %v)", err)
 	} else if value != vEn {
 		t.Fatalf("found value (%s), but expected \"%s\"", value, vEn)
 	}
-	value, err = manager.Get("hello", "de")
+	value, err = manager.GetByLanguage("hello", "de")
 	if err != nil {
 		t.Fatalf("should have found value (err: %v)", err)
 	} else if value != vDe {
 		t.Fatalf("found value (%s), but expected \"%s\"", value, vDe)
 	}
-	value, err = manager.Get("hello", "ru")
+	value, err = manager.GetByLanguage("hello", "ru")
 	if err != nil {
 		t.Fatalf("should have found value (err: %v)", err)
 	} else if value != vRu {
@@ -131,7 +161,7 @@ func TestGetFound(t *testing.T) {
 	}
 }
 
-func TestGetFoundWithWrongDefaultLang(t *testing.T) {
+func TestGetByLanguageFoundWithWrongDefaultLang(t *testing.T) {
 	repo := setUp(t)
 	defer tearDown(t)
 
@@ -140,7 +170,7 @@ func TestGetFoundWithWrongDefaultLang(t *testing.T) {
 
 	const vEn = "hello"
 
-	value, err := manager.Get("hello", "en")
+	value, err := manager.GetByLanguage("hello", "en")
 	if err != nil {
 		t.Fatalf("should have found value (err: %v)", err)
 	} else if value != vEn {
@@ -148,31 +178,31 @@ func TestGetFoundWithWrongDefaultLang(t *testing.T) {
 	}
 }
 
-func TestGetWrongKey(t *testing.T) {
+func TestGetByLanguageWrongKey(t *testing.T) {
 	repo := setUp(t)
 	defer tearDown(t)
 
 	manager := NewDefaultManager(repo)
 
-	value, err := manager.Get("huhu", "en")
+	value, err := manager.GetByLanguage("huhu", "en")
 	if err == nil {
 		t.Fatalf("result found (%s). should have returned error", value)
 	}
 }
 
-func TestGetWrongLanguage(t *testing.T) {
+func TestGetByLanguageWrongLanguage(t *testing.T) {
 	repo := setUp(t)
 	defer tearDown(t)
 
 	manager := NewDefaultManager(repo)
 
-	value, err := manager.Get("hello", "es")
+	value, err := manager.GetByLanguage("hello", "es")
 	if err == nil {
 		t.Fatalf("result found (%s). should have returned error", value)
 	}
 }
 
-func TestGetWrongLangButDefaultLang(t *testing.T) {
+func TestGetByLanguageWrongLangButDefaultLang(t *testing.T) {
 	repo := setUp(t)
 	defer tearDown(t)
 
@@ -181,7 +211,7 @@ func TestGetWrongLangButDefaultLang(t *testing.T) {
 
 	const vExp = "hello"
 
-	value, err := manager.Get("hello", "es")
+	value, err := manager.GetByLanguage("hello", "es")
 	if err != nil {
 		t.Fatalf("returned error despite available default language: %v", err)
 	} else if value != vExp {
@@ -189,14 +219,14 @@ func TestGetWrongLangButDefaultLang(t *testing.T) {
 	}
 }
 
-func TestGetWrongLangAndWrongDefaultLang(t *testing.T) {
+func TestGetByLanguageWrongLangAndWrongDefaultLang(t *testing.T) {
 	repo := setUp(t)
 	defer tearDown(t)
 
 	manager := NewDefaultManager(repo)
 	manager.SetDefaultLanguage("es")
 
-	value, err := manager.Get("hello", "hu")
+	value, err := manager.GetByLanguage("hello", "hu")
 	if err == nil {
 		t.Fatalf("result found (%s). should have returned error", value)
 	}

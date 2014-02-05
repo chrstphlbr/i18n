@@ -15,10 +15,22 @@ type DefaultManager struct {
 	repository         resource.Repository
 	mapping            keys
 	mappingConstructed time.Time
+	language           string
 	defaultLanguage    string
 }
 
-func (m DefaultManager) Get(key string, language string) (value string, err error) {
+func (m DefaultManager) Get(key string) (value string, err error) {
+	m.accessLock.RLock()
+	defer m.accessLock.RUnlock()
+	if m.language == "" {
+		err = fmt.Errorf("language is not set")
+		return
+	}
+	value, err = m.getWithoutLock(key, m.language)
+	return
+}
+
+func (m DefaultManager) GetByLanguage(key string, language string) (value string, err error) {
 	m.accessLock.RLock()
 	defer m.accessLock.RUnlock()
 	value, err = m.getWithoutLock(key, language)
@@ -68,10 +80,28 @@ func (m DefaultManager) getAllWithoutLock(key string) (values map[string]string,
 	return
 }
 
+func (m *DefaultManager) SetLanguage(language string) {
+	m.accessLock.Lock()
+	defer m.accessLock.Unlock()
+	m.language = language
+}
+
+func (m DefaultManager) GetLanguage() string {
+	m.accessLock.RLock()
+	defer m.accessLock.RUnlock()
+	return m.language
+}
+
 func (m *DefaultManager) SetDefaultLanguage(language string) {
 	m.accessLock.Lock()
 	defer m.accessLock.Unlock()
 	m.defaultLanguage = language
+}
+
+func (m DefaultManager) GetDefaultLanguage() string {
+	m.accessLock.RLock()
+	defer m.accessLock.RUnlock()
+	return m.defaultLanguage
 }
 
 func (m *DefaultManager) constructMapping() {

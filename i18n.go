@@ -29,9 +29,13 @@ func SetManager(m Manager) {
 }
 
 type Manager interface {
-	Get(key string, language string) (value string, err error)
+	Get(key string) (value string, err error)
+	GetByLanguage(key string, language string) (value string, err error)
 	GetAll(key string) (values map[string]string, err error)
+	SetLanguage(language string)
+	GetLanguage() string
 	SetDefaultLanguage(language string)
+	GetDefaultLanguage() string
 }
 
 // mapping types
