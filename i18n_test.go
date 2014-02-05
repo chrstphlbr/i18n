@@ -201,3 +201,31 @@ func TestGetWrongLangAndWrongDefaultLang(t *testing.T) {
 		t.Fatalf("result found (%s). should have returned error", value)
 	}
 }
+
+func TestGetAll(t *testing.T) {
+	repo := setUp(t)
+	defer tearDown(t)
+
+	manager := NewDefaultI18nManager(repo)
+
+	values, err := manager.GetAll("hello")
+	if err != nil {
+		t.Fatalf("error but there should not be one: %v", err)
+	}
+	length := len(values)
+	if length != 3 {
+		t.Fatalf("should have exactly 3 values but has %d", length)
+	}
+}
+
+func TestGetAllError(t *testing.T) {
+	repo := setUp(t)
+	defer tearDown(t)
+
+	manager := NewDefaultI18nManager(repo)
+
+	values, err := manager.GetAll("huhu")
+	if err == nil {
+		t.Fatalf("did not return but returned values (%v)", values)
+	}
+}

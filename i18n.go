@@ -28,6 +28,7 @@ func Manager() I18nManager {
 
 type I18nManager interface {
 	Get(key string, language string) (value string, err error)
+	GetAll(key string) (values map[string]string, err error)
 	SetDefaultLanguage(language string)
 }
 
@@ -40,7 +41,7 @@ type values map[string]string
 
 type DefaultI18nManager struct {
 	accessLock sync.RWMutex
-	// pathes to directories where files are located
+	// paths to directories where files are located
 	repository         resource.Repository
 	mapping            keys
 	mappingConstructed time.Time
@@ -50,15 +51,18 @@ type DefaultI18nManager struct {
 func (m DefaultI18nManager) Get(key string, language string) (value string, err error) {
 	m.accessLock.RLock()
 	defer m.accessLock.RUnlock()
-	// check if there
-	values, ok := m.mapping[key]
-	if !ok {
-		err = fmt.Errorf("could not find mapping for key (%s)", key)
+	value, err = m.getWithoutLock(key, language)
+	return
+}
+
+func (m DefaultI18nManager) getWithoutLock(key, language string) (value string, err error) {
+	values, err := m.getAllWithoutLock(key)
+	if err != nil {
 		return
 	}
 
 	// check for language
-	value, ok = values[language]
+	value, ok := values[language]
 	if ok {
 		// found correct value
 		return
@@ -75,6 +79,21 @@ func (m DefaultI18nManager) Get(key string, language string) (value string, err 
 	} else {
 		// no default language set
 		err = fmt.Errorf("did not find value for key (%s) in language (%s). No default language set.", key, language)
+	}
+	return
+}
+
+func (m DefaultI18nManager) GetAll(key string) (values map[string]string, err error) {
+	m.accessLock.RLock()
+	defer m.accessLock.RUnlock()
+	values, err = m.getAllWithoutLock(key)
+	return
+}
+
+func (m DefaultI18nManager) getAllWithoutLock(key string) (values map[string]string, err error) {
+	values, ok := m.mapping[key]
+	if !ok {
+		err = fmt.Errorf("could not find mapping for key (%s)", key)
 	}
 	return
 }
