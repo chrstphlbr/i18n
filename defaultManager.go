@@ -19,7 +19,7 @@ type DefaultManager struct {
 	defaultLanguage    string
 }
 
-func (m DefaultManager) Get(key string) (value string, err error) {
+func (m DefaultManager) GetByLanguage(key string) (value string, err error) {
 	m.accessLock.RLock()
 	defer m.accessLock.RUnlock()
 	if m.language == "" {
@@ -30,7 +30,7 @@ func (m DefaultManager) Get(key string) (value string, err error) {
 	return
 }
 
-func (m DefaultManager) GetByLanguage(key string, language string) (value string, err error) {
+func (m DefaultManager) Get(key string, language string) (value string, err error) {
 	m.accessLock.RLock()
 	defer m.accessLock.RUnlock()
 	value, err = m.getWithoutLock(key, language)
@@ -76,6 +76,22 @@ func (m DefaultManager) getAllWithoutLock(key string) (values map[string]string,
 	values, ok := m.mapping[key]
 	if !ok {
 		err = fmt.Errorf("could not find mapping for key (%s)", key)
+	}
+	return
+}
+
+func (m DefaultManager) GetOrLog(key string, language string) (value string) {
+	value, err := m.Get(key, language)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	return
+}
+
+func (m DefaultManager) GetAllOrLog(key string) (values map[string]string) {
+	values, err := m.GetAll(key)
+	if err != nil {
+		log.Println(err.Error())
 	}
 	return
 }

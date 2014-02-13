@@ -17,7 +17,7 @@ The following lines of code show how to use the default manager with the default
 ```go
 manager := i18n.GetManager()
 
-value, err := manager.GetByLanguage("key", "language")
+value, err := manager.Get("key", "language")
 if err != nil {
 	// do error handling
 }

@@ -29,13 +29,27 @@ func SetManager(m Manager) {
 }
 
 type Manager interface {
-	Get(key string) (value string, err error)
-	GetByLanguage(key string, language string) (value string, err error)
+	ManagerMinimal
+	ManagerWithLanguage
+	ManagerWithLogging
+}
+
+type ManagerMinimal interface {
+	Get(key string, language string) (value string, err error)
 	GetAll(key string) (values map[string]string, err error)
-	SetLanguage(language string)
-	GetLanguage() string
 	SetDefaultLanguage(language string)
 	GetDefaultLanguage() string
+}
+
+type ManagerWithLanguage interface {
+	GetByLanguage(key string) (value string, err error)
+	SetLanguage(language string)
+	GetLanguage() string
+}
+
+type ManagerWithLogging interface {
+	GetOrLog(key string, language string) (value string)
+	GetAllOrLog(key string) (values map[string]string)
 }
 
 // mapping types
