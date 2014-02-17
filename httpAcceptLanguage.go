@@ -25,7 +25,10 @@ func (al AcceptLanguage) AcceptedLanguages() <-chan string {
 	c := make(chan string)
 	go func() {
 		for _, v := range *al.values.params {
-			c <- v.language
+			// include just those which have a quality greater than zero
+			if v.quality > 0 {
+				c <- v.language
+			}
 		}
 		close(c)
 	}()
@@ -92,8 +95,14 @@ func newAcceptLanguageParameter(value string) (alp *acceptLanguageParameter, err
 		if err1 != nil {
 			err = fmt.Errorf("language entry malformed. could not parse: ", vTrimmed)
 			return
+		} else if q < 0 {
+			// quality must be zero or greater
+			err = fmt.Errorf("language entry malformed. Quality (q) must be greater or equal to zero (q was %g)", vTrimmed, q)
+			return
+		} else {
+			// valid
+			alp.quality = float32(q)
 		}
-		alp.quality = float32(q)
 	default:
 		// splitted and invalid amount of parameters
 		// malformed language parameter

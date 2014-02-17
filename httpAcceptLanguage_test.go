@@ -45,6 +45,10 @@ func TestALHttpHeaderUnordered(t *testing.T) {
 	testAL(t, "en-gb;q=0.8, da;q=1, en;q=0.7")
 }
 
+func TestALHttpHeaderQ0Included(t *testing.T) {
+	testAL(t, "en-gb;q=0.8, ru;q=0 ,en;q=0.7, da;q=.9")
+}
+
 func testAL(t *testing.T, acceptLanguageHeader string) {
 	header, err := NewAcceptLanguage(acceptLanguageHeader)
 	if err != nil {
