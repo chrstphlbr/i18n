@@ -35,6 +35,8 @@ type Manager interface {
 }
 
 type ManagerMinimal interface {
+	// Get searches in the imnternal repository for a value which matches the provided key and language and returns if found the value (value) or if not found
+	// an error (err). The parameter value can be a general string or can have the form for Accept-Language HTTP-Header.
 	Get(key string, language string) (value string, err error)
 	GetAll(key string) (values map[string]string, err error)
 	SetDefaultLanguage(language string)

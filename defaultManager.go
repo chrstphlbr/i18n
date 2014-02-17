@@ -30,6 +30,7 @@ func (m DefaultManager) GetByLanguage(key string) (value string, err error) {
 	return
 }
 
+// Get implements the method of the interface ManagerMinimal
 func (m DefaultManager) Get(key string, language string) (value string, err error) {
 	m.accessLock.RLock()
 	defer m.accessLock.RUnlock()
@@ -43,8 +44,34 @@ func (m DefaultManager) getWithoutLock(key, language string) (value string, err 
 		return
 	}
 
+	gv := func() (value string, ok bool) {
+		if language == "" {
+			ok = false
+			return
+		}
+		// check for regular string
+		value, ok = values[language]
+		if ok {
+			return
+		}
+		// check for HTTP-Header Accept-Language
+		al, err := NewAcceptLanguage(language)
+		if err != nil {
+			ok = false
+			return
+		}
+		// get value for all languages and return when first match occurs
+		for lang := range al.AcceptedLanguages() {
+			value, ok = values[lang]
+			if ok {
+				return
+			}
+		}
+		return
+	}
+
 	// check for language
-	value, ok := values[language]
+	value, ok := gv()
 	if ok {
 		// found correct value
 		return
